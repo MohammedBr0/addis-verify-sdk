@@ -1,0 +1,14 @@
+{
+  "name": "kyc-sdk-test",
+  "version": "1.0.0",
+  "description": "Test dependencies for KYC SDK",
+  "scripts": {
+    "test": "node test-node.js",
+    "test:watch": "nodemon test-node.js",
+    "test:browser": "python3 -m http.server 8080 && open http://localhost:8080/test-local.html"
+  },
+  "devDependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "dependencies": {}
+}

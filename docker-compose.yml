@@ -1,0 +1,42 @@
+services:
+  # SDK Development Server
+  sdk-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: addisverify-sdk
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./dist:/app/dist
+      - ./test-project:/app/test-project
+      - ./examples:/app/examples
+      - ./README.md:/app/README.md
+    networks:
+      - addisverify-network
+    restart: unless-stopped
+
+  # SDK Build Service (for development)
+  sdk-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: addisverify-sdk-builder
+    volumes:
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run build:watch
+    networks:
+      - addisverify-network
+    profiles:
+      - build
+
+networks:
+  addisverify-network:
+    external: true
+    name: addisverify-network

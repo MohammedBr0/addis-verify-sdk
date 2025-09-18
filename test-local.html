@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC SDK Local Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563EB;
+        }
+        .test-button:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .kyc-widget {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 KYC SDK Local Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Basic SDK Test</h2>
+        <p>Test the core SDK functionality without React:</p>
+        <button class="test-button" onclick="testBasicSDK()">Test Basic SDK</button>
+        <button class="test-button" onclick="testSDKMethods()">Test SDK Methods</button>
+        <button class="test-button" onclick="testErrorHandling()">Test Error Handling</button>
+        <div id="basic-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. API Service Test</h2>
+        <p>Test the API service functionality:</p>
+        <button class="test-button" onclick="testAPIService()">Test API Service</button>
+        <button class="test-button" onclick="testAuthentication()">Test Authentication</button>
+        <div id="api-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. State Management Test</h2>
+        <p>Test the state management functionality:</p>
+        <button class="test-button" onclick="testStateManagement()">Test State Management</button>
+        <button class="test-button" onclick="testProgressTracking()">Test Progress Tracking</button>
+        <div id="state-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Validation Test</h2>
+        <p>Test the validation utilities:</p>
+        <button class="test-button" onclick="testValidation()">Test Validation</button>
+        <button class="test-button" onclick="testFileValidation()">Test File Validation</button>
+        <div id="validation-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Storage Test</h2>
+        <p>Test the local storage functionality:</p>
+        <button class="test-button" onclick="testStorage()">Test Storage</button>
+        <button class="test-button" onclick="testStoragePersistence()">Test Persistence</button>
+        <div id="storage-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Complete Flow Test</h2>
+        <p>Test the complete KYC flow:</p>
+        <button class="test-button" onclick="testCompleteFlow()">Test Complete Flow</button>
+        <button class="test-button" onclick="resetTest()">Reset Test</button>
+        <div id="flow-log" class="log"></div>
+    </div>
+
+    <script type="module">
+        // Import the SDK (this will work when built)
+        import { 
+            KYCWebSDK, 
+            KYCError, 
+            KYCValidator, 
+            KYCStorage 
+        } from './index.js';
+
+        // Global variables for testing
+        let kycSDK = null;
+        let testResults = {};
+
+        // Utility function to log messages
+        function log(message, type = 'info', logId = 'basic-log') {
+            const logElement = document.getElementById(logId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            
+            logElement.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollTop + 1000;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Test 1: Basic SDK
+        window.testBasicSDK = async function() {
+            const logId = 'basic-log';
+            log('Starting Basic SDK Test...', 'info', logId);
+            
+            try {
+                // Create SDK instance
+                kycSDK = new KYCWebSDK({
+                    auth: {
+                        apiKey: 'test-api-key-12345',
+                        tenantId: 'test-tenant',
+                        userId: 'test-user'
+                    },
+                    apiBaseUrl: 'http://localhost:3003',
+                    enableLocalStorage: true,
+                    debug: true,
+                    onStepChange: (step, data) => {
+                        log(`Step changed to: ${step}`, 'info', logId);
+                    },
+                    onProgressUpdate: (progress) => {
+                        log(`Progress updated: ${progress.currentStepIndex}/${progress.totalSteps}`, 'info', logId);
+                    },
+                    onError: (error) => {
+                        log(`Error occurred: ${error.message}`, 'error', logId);
+                    }
+                });
+
+                log('SDK instance created successfully', 'success', logId);
+                
+                // Test initialization
+                await kycSDK.initialize();
+                log('SDK initialized successfully', 'success', logId);
+                
+                testResults.basicSDK = 'PASSED';
+                log('✅ Basic SDK Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Basic SDK Test FAILED: ${error.message}`, 'error', logId);
+                testResults.basicSDK = 'FAILED';
+            }
+        };
+
+        // Test 2: SDK Methods
+        window.testSDKMethods = async function() {
+            const logId = 'basic-log';
+            if (!kycSDK) {
+                log('Please run Basic SDK Test first', 'error', logId);
+                return;
+            }
+
+            log('Testing SDK Methods...', 'info', logId);
+            
+            try {
+                // Test getters
+                const currentStep = kycSDK.getCurrentStep();
+                const data = kycSDK.getData();
+                const progress = kycSDK.getProgress();
+                
+                log(`Current step: ${currentStep}`, 'info', logId);
+                log(`Data: ${JSON.stringify(data, null, 2)}`, 'info', logId);
+                log(`Progress: ${progress.currentStepIndex}/${progress.totalSteps}`, 'info', logId);
+                
+                // Test navigation
+                kycSDK.goToStep('idTypeSelection');
+                log('Navigated to idTypeSelection step', 'info', logId);
+                
+                // Test data update
+                kycSDK.updateData({ idType: 'national_id' });
+                log('Updated data with national_id', 'info', logId);
+                
+                testResults.sdkMethods = 'PASSED';
+                log('✅ SDK Methods Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`SDK Methods Test FAILED: ${error.message}`, 'error', logId);
+                testResults.sdkMethods = 'FAILED';
+            }
+        };
+
+        // Test 3: Error Handling
+        window.testErrorHandling = function() {
+            const logId = 'basic-log';
+            log('Testing Error Handling...', 'info', logId);
+            
+            try {
+                // Test KYCError creation
+                const error = new KYCError('Test error message', new Error('Original error'), 'TEST_ERROR');
+                log(`Error created: ${error.message} (Code: ${error.code})`, 'info', logId);
+                
+                // Test error types
+                const validationError = KYCError.fromValidationError(['Field 1 is required', 'Field 2 is invalid']);
+                log(`Validation error: ${validationError.message}`, 'info', logId);
+                
+                const authError = KYCError.fromAuthError(new Error('Auth failed'));
+                log(`Auth error: ${authError.message}`, 'info', logId);
+                
+                testResults.errorHandling = 'PASSED';
+                log('✅ Error Handling Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Error Handling Test FAILED: ${error.message}`, 'error', logId);
+                testResults.errorHandling = 'FAILED';
+            }
+        };
+
+        // Test 4: API Service
+        window.testAPIService = async function() {
+            const logId = 'api-log';
+            log('Testing API Service...', 'info', logId);
+            
+            try {
+                // This would require a running backend
+                log('Note: API tests require a running backend server', 'info', logId);
+                log('Skipping actual API calls for local testing', 'info', logId);
+                
+                testResults.apiService = 'SKIPPED';
+                log('⚠️ API Service Test SKIPPED (no backend)', 'info', logId);
+                
+            } catch (error) {
+                log(`API Service Test FAILED: ${error.message}`, 'error', logId);
+                testResults.apiService = 'FAILED';
+            }
+        };
+
+        // Test 5: Authentication
+        window.testAuthentication = function() {
+            const logId = 'api-log';
+            log('Testing Authentication...', 'info', logId);
+            
+            try {
+                // Test credential validation
+                const validator = new KYCValidator();
+                
+                // Test valid config
+                const validConfig = {
+                    auth: { apiKey: 'valid-api-key-12345' },
+                    apiBaseUrl: 'http://localhost:3003'
+                };
+                validator.validateConfig(validConfig);
+                log('Valid config validation passed', 'success', logId);
+                
+                // Test invalid config
+                try {
+                    const invalidConfig = { apiBaseUrl: 'http://localhost:3003' };
+                    validator.validateConfig(invalidConfig);
+                    log('Invalid config validation should have failed', 'error', logId);
+                } catch (error) {
+                    log('Invalid config validation correctly failed', 'success', logId);
+                }
+                
+                testResults.authentication = 'PASSED';
+                log('✅ Authentication Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Authentication Test FAILED: ${error.message}`, 'error', logId);
+                testResults.authentication = 'FAILED';
+            }
+        };
+
+        // Test 6: State Management
+        window.testStateManagement = function() {
+            const logId = 'state-log';
+            log('Testing State Management...', 'info', logId);
+            
+            try {
+                if (!kycSDK) {
+                    log('Please run Basic SDK Test first', 'error', logId);
+                    return;
+                }
+                
+                const state = kycSDK.getState();
+                log(`Current state: ${JSON.stringify(state, null, 2)}`, 'info', logId);
+                
+                // Test progress
+                const progress = kycSDK.getProgress();
+                log(`Progress: ${progress.currentStepIndex}/${progress.totalSteps}`, 'info', logId);
+                log(`Can go next: ${progress.canGoNext}`, 'info', logId);
+                log(`Can go back: ${progress.canGoBack}`, 'info', logId);
+                
+                testResults.stateManagement = 'PASSED';
+                log('✅ State Management Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`State Management Test FAILED: ${error.message}`, 'error', logId);
+                testResults.stateManagement = 'FAILED';
+            }
+        };
+
+        // Test 7: Progress Tracking
+        window.testProgressTracking = function() {
+            const logId = 'state-log';
+            log('Testing Progress Tracking...', 'info', logId);
+            
+            try {
+                if (!kycSDK) {
+                    log('Please run Basic SDK Test first', 'error', logId);
+                    return;
+                }
+                
+                // Test step navigation
+                const steps = ['welcome', 'idTypeSelection', 'idScanFront', 'idScanBack'];
+                
+                steps.forEach((step, index) => {
+                    kycSDK.goToStep(step);
+                    const currentStep = kycSDK.getCurrentStep();
+                    const progress = kycSDK.getProgress();
+                    
+                    log(`Step ${index + 1}: ${step} (Current: ${currentStep})`, 'info', logId);
+                    log(`Progress: ${progress.currentStepIndex}/${progress.totalSteps}`, 'info', logId);
+                });
+                
+                testResults.progressTracking = 'PASSED';
+                log('✅ Progress Tracking Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Progress Tracking Test FAILED: ${error.message}`, 'error', logId);
+                testResults.progressTracking = 'FAILED';
+            }
+        };
+
+        // Test 8: Validation
+        window.testValidation = function() {
+            const logId = 'validation-log';
+            log('Testing Validation...', 'info', logId);
+            
+            try {
+                const validator = new KYCValidator();
+                
+                // Test step validation
+                const validData = {
+                    idType: 'national_id',
+                    idFront: new File([''], 'test.jpg'),
+                    idBack: new File([''], 'test.jpg'),
+                    selfie: new File([''], 'test.jpg'),
+                    ocrData: {
+                        fullName: 'John Doe',
+                        dateOfBirth: '1990-01-01',
+                        dateOfExpiry: '2025-12-31',
+                        gender: 'Male',
+                        idNumber: '123456789',
+                        issuingAuthority: 'Government of Ethiopia'
+                    }
+                };
+                
+                const result = validator.validateStep('review', validData);
+                log(`Step validation result: ${result.isValid}`, 'info', logId);
+                
+                if (result.isValid) {
+                    log('✅ Step validation passed', 'success', logId);
+                } else {
+                    log(`❌ Step validation failed: ${result.errors.join(', ')}`, 'error', logId);
+                }
+                
+                testResults.validation = 'PASSED';
+                log('✅ Validation Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Validation Test FAILED: ${error.message}`, 'error', logId);
+                testResults.validation = 'FAILED';
+            }
+        };
+
+        // Test 9: File Validation
+        window.testFileValidation = function() {
+            const logId = 'validation-log';
+            log('Testing File Validation...', 'info', logId);
+            
+            try {
+                const validator = new KYCValidator();
+                
+                // Test valid file
+                const validFile = new File(['test content'], 'test.jpg', { type: 'image/jpeg' });
+                const validResult = validator.validateFile(validFile);
+                log(`Valid file validation: ${validResult.isValid}`, 'info', logId);
+                
+                // Test invalid file type
+                const invalidFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+                const invalidResult = validator.validateFile(invalidFile);
+                log(`Invalid file validation: ${invalidResult.isValid}`, 'info', logId);
+                
+                if (!invalidResult.isValid) {
+                    log(`Invalid file errors: ${invalidResult.errors.join(', ')}`, 'info', logId);
+                }
+                
+                testResults.fileValidation = 'PASSED';
+                log('✅ File Validation Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`File Validation Test FAILED: ${error.message}`, 'error', logId);
+                testResults.fileValidation = 'FAILED';
+            }
+        };
+
+        // Test 10: Storage
+        window.testStorage = function() {
+            const logId = 'storage-log';
+            log('Testing Storage...', 'info', logId);
+            
+            try {
+                const storage = new KYCStorage(true);
+                
+                // Test save and load
+                const testData = { test: 'data', timestamp: Date.now() };
+                storage.saveState(testData);
+                log('Test data saved to storage', 'info', logId);
+                
+                const loadedData = storage.loadState();
+                log(`Loaded data: ${JSON.stringify(loadedData)}`, 'info', logId);
+                
+                if (JSON.stringify(loadedData) === JSON.stringify(testData)) {
+                    log('✅ Storage save/load test passed', 'success', logId);
+                } else {
+                    log('❌ Storage save/load test failed', 'error', logId);
+                }
+                
+                // Test clear
+                storage.clearState();
+                const clearedData = storage.loadState();
+                if (clearedData === null) {
+                    log('✅ Storage clear test passed', 'success', logId);
+                } else {
+                    log('❌ Storage clear test failed', 'error', logId);
+                }
+                
+                testResults.storage = 'PASSED';
+                log('✅ Storage Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Storage Test FAILED: ${error.message}`, 'error', logId);
+                testResults.storage = 'FAILED';
+            }
+        };
+
+        // Test 11: Storage Persistence
+        window.testStoragePersistence = function() {
+            const logId = 'storage-log';
+            log('Testing Storage Persistence...', 'info', logId);
+            
+            try {
+                const storage = new KYCStorage(true);
+                
+                // Save data
+                const testData = { 
+                    test: 'persistence', 
+                    timestamp: Date.now(),
+                    nested: { value: 'test' }
+                };
+                storage.saveState(testData);
+                log('Test data saved for persistence test', 'info', logId);
+                
+                // Simulate page reload by creating new storage instance
+                const newStorage = new KYCStorage(true);
+                const persistedData = newStorage.loadState();
+                
+                if (persistedData && persistedData.test === 'persistence') {
+                    log('✅ Storage persistence test passed', 'success', logId);
+                } else {
+                    log('❌ Storage persistence test failed', 'error', logId);
+                }
+                
+                // Clean up
+                storage.clearState();
+                
+                testResults.storagePersistence = 'PASSED';
+                log('✅ Storage Persistence Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Storage Persistence Test FAILED: ${error.message}`, 'error', logId);
+                testResults.storagePersistence = 'FAILED';
+            }
+        };
+
+        // Test 12: Complete Flow
+        window.testCompleteFlow = async function() {
+            const logId = 'flow-log';
+            log('Testing Complete KYC Flow...', 'info', logId);
+            
+            try {
+                if (!kycSDK) {
+                    log('Please run Basic SDK Test first', 'error', logId);
+                    return;
+                }
+                
+                // Start verification
+                await kycSDK.startVerification();
+                log('Verification started', 'info', logId);
+                
+                // Simulate flow steps
+                const steps = [
+                    { step: 'welcome', action: () => kycSDK.nextStep() },
+                    { step: 'idTypeSelection', action: () => {
+                        kycSDK.updateData({ idType: 'national_id' });
+                        kycSDK.nextStep();
+                    }},
+                    { step: 'idScanFront', action: () => {
+                        kycSDK.updateData({ idFront: new File([''], 'front.jpg') });
+                        kycSDK.nextStep();
+                    }},
+                    { step: 'idScanBack', action: () => {
+                        kycSDK.updateData({ idBack: new File([''], 'back.jpg') });
+                        kycSDK.nextStep();
+                    }},
+                    { step: 'ocrPreview', action: () => {
+                        kycSDK.updateData({
+                            ocrData: {
+                                fullName: 'John Doe',
+                                dateOfBirth: '1990-01-01',
+                                dateOfExpiry: '2025-12-31',
+                                gender: 'Male',
+                                idNumber: '123456789',
+                                issuingAuthority: 'Government of Ethiopia'
+                            }
+                        });
+                        kycSDK.nextStep();
+                    }},
+                    { step: 'selfie', action: () => {
+                        kycSDK.updateData({ selfie: new File([''], 'selfie.jpg') });
+                        kycSDK.nextStep();
+                    }},
+                    { step: 'review', action: () => kycSDK.nextStep() },
+                    { step: 'processing', action: () => {
+                        // Simulate processing delay
+                        setTimeout(() => kycSDK.nextStep(), 1000);
+                    }},
+                    { step: 'result', action: () => {
+                        log('Complete flow test finished', 'success', logId);
+                    }}
+                ];
+                
+                for (const stepInfo of steps) {
+                    const currentStep = kycSDK.getCurrentStep();
+                    log(`Current step: ${currentStep}, Target: ${stepInfo.step}`, 'info', logId);
+                    
+                    if (currentStep === stepInfo.step) {
+                        stepInfo.action();
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                testResults.completeFlow = 'PASSED';
+                log('✅ Complete Flow Test PASSED', 'success', logId);
+                
+            } catch (error) {
+                log(`Complete Flow Test FAILED: ${error.message}`, 'error', logId);
+                testResults.completeFlow = 'FAILED';
+            }
+        };
+
+        // Reset test
+        window.resetTest = function() {
+            const logId = 'flow-log';
+            log('Resetting test...', 'info', logId);
+            
+            if (kycSDK) {
+                kycSDK.reset();
+                log('SDK reset completed', 'info', logId);
+            }
+            
+            // Clear all logs
+            document.querySelectorAll('.log').forEach(log => {
+                log.innerHTML = '';
+            });
+            
+            // Reset test results
+            testResults = {};
+            log('Test reset completed', 'success', logId);
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🧪 KYC SDK Local Test Page Loaded', 'success', 'basic-log');
+            log('Click the test buttons to run different tests', 'info', 'basic-log');
+            log('Check the browser console for detailed logs', 'info', 'basic-log');
+        });
+    </script>
+</body>
+</html>

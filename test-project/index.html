@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC SDK Local Test Project</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .log-section {
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        .log-entry.info { color: #60a5fa; }
+        .log-entry.success { color: #34d399; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.warning { color: #fbbf24; }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 KYC SDK Local Test</h1>
+            <p>Testing the locally published KYC SDK</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h3>📦 SDK Import Test</h3>
+                <p>This page tests importing and using the locally built KYC SDK.</p>
+                <button class="btn" onclick="testSDKImport()">Test SDK Import</button>
+                <button class="btn" onclick="testSDKUsage()">Test SDK Usage</button>
+                <button class="btn" onclick="clearLogs()">Clear Logs</button>
+            </div>
+
+            <div id="status" class="status info" style="display: none;">
+                Ready to test
+            </div>
+
+            <div class="log-section">
+                <div id="logs">
+                    <div class="log-entry info">🚀 KYC SDK Local Test Project Ready</div>
+                    <div class="log-entry info">📝 Click buttons above to test SDK functionality</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Test SDK import
+        let sdk = null;
+
+        // Logging function
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        // Test SDK import
+        window.testSDKImport = async function() {
+            try {
+                log('📦 Testing SDK import...', 'info');
+                showStatus('Testing SDK import...', 'info');
+
+                // Try to import the SDK
+                const { KYCWebSDK } = await import('./dist/index.js');
+                
+                if (KYCWebSDK) {
+                    log('✅ SDK imported successfully!', 'success');
+                    log(`📋 SDK Class: ${KYCWebSDK.name}`, 'info');
+                    log(`🔍 SDK Methods: ${Object.getOwnPropertyNames(KYCWebSDK.prototype).join(', ')}`, 'info');
+                    
+                    // Store SDK reference
+                    sdk = KYCWebSDK;
+                    showStatus('SDK imported successfully!', 'success');
+                } else {
+                    throw new Error('SDK import returned undefined');
+                }
+
+            } catch (error) {
+                log(`❌ SDK import failed: ${error.message}`, 'error');
+                showStatus('SDK import failed!', 'error');
+                
+                // Show helpful error information
+                if (error.message.includes('Failed to fetch')) {
+                    log('💡 Tip: Make sure you have built the SDK first (run build-local.sh)', 'warning');
+                }
+            }
+        };
+
+        // Test SDK usage
+        window.testSDKUsage = async function() {
+            if (!sdk) {
+                log('❌ SDK not imported. Please import first.', 'error');
+                return;
+            }
+
+            try {
+                log('🧪 Testing SDK usage...', 'info');
+                showStatus('Testing SDK usage...', 'info');
+
+                // Create SDK instance
+                const config = {
+                    auth: {
+                        apiKey: 'test-api-key',
+                        tenantId: 'test-tenant',
+                        userId: 'test-user'
+                    },
+                    apiBaseUrl: 'http://localhost:3003',
+                    enableAutoOCR: true,
+                    enableFaceVerification: true,
+                    debug: true
+                };
+
+                log('📋 Creating SDK instance with config:', 'info');
+                log(JSON.stringify(config, null, 2), 'info');
+
+                const sdkInstance = new sdk(config);
+                log('✅ SDK instance created successfully', 'success');
+
+                // Test SDK methods
+                if (typeof sdkInstance.initialize === 'function') {
+                    log('✅ initialize method found', 'success');
+                }
+                if (typeof sdkInstance.getState === 'function') {
+                    log('✅ getState method found', 'success');
+                }
+                if (typeof sdkInstance.updateData === 'function') {
+                    log('✅ updateData method found', 'success');
+                }
+
+                // Test state
+                const state = sdkInstance.getState();
+                log('📊 Initial SDK state:', 'info');
+                log(JSON.stringify(state, null, 2), 'info');
+
+                showStatus('SDK usage test completed!', 'success');
+
+            } catch (error) {
+                log(`❌ SDK usage test failed: ${error.message}`, 'error');
+                showStatus('SDK usage test failed!', 'error');
+            }
+        };
+
+        window.clearLogs = function() {
+            const logs = document.getElementById('logs');
+            logs.innerHTML = '<div class="log-entry info">🧹 Logs cleared</div>';
+            showStatus('Logs cleared', 'info');
+        };
+
+        // Initialize page
+        log('🌐 Local test project loaded', 'success');
+        showStatus('Ready to test locally published SDK', 'info');
+    </script>
+</body>
+</html>

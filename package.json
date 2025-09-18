@@ -41,11 +41,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/addis-verify-sdk.git"
+    "url": "https://github.com/MohammedBr0/addis-verify-sdk.git"
   },
-  "homepage": "https://addisverify.com",
+  "homepage": "https://github.com/MohammedBr0/addis-verify-sdk#readme",
   "bugs": {
-    "url": "https://github.com/your-org/addis-verify-sdk/issues"
+    "url": "https://github.com/MohammedBr0/addis-verify-sdk/issues"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
